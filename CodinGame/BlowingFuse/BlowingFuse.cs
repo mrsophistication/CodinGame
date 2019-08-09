@@ -20,50 +20,35 @@ class BlowingFuse
         int c = int.Parse(inputs[2]);
         inputs = Console.ReadLine().Split(' ');
 
-        int totalUse = 0;
-        Dictionary<int, List<int>> devices = new Dictionary<int, List<int>>();
-
-        Console.Error.WriteLine($"{c}");
+        int[] currents = new int[n];
 
         for (int i = 0; i < n; i++)
-        {
-            int nx = int.Parse(inputs[i]);
-            List<int> z = new List<int>();
-            z.Add(nx);
-            z.Add(0);
-            devices.Add(i, z);
-        }
-        inputs = Console.ReadLine().Split(' ');
+            currents[i] = int.Parse(inputs[i]);
 
+        int sum = 0;
+        int max = 0;
+
+        inputs = Console.ReadLine().Split(' ');
         for (int i = 0; i < m; i++)
         {
-            int mx = int.Parse(inputs[i]);
-            if (devices[mx - 1][1] == 0)
+            int mx = int.Parse(inputs[i]) - 1;
+            sum += currents[mx];
+            currents[mx] *= -1;
+            max = Math.Max(sum, max);
+
+            if (max > c)
             {
-                devices[mx - 1][1] = 1;
-                totalUse += devices[mx - 1][0];
-                if (totalUse > c)
-                {
-                    Console.WriteLine("Fuse was blown.");
-                    break;
-                }
-                Console.Error.WriteLine($"{totalUse} + {devices[mx - 1][0]} = {totalUse}");
-            }
-            else if (devices[mx - 1][1] == 1)
-            {
-                devices[mx][1] = 0;
-                totalUse -= devices[mx - 1][0];
-                Console.Error.WriteLine($"{totalUse} - ({devices[mx - 1][0]}) = {totalUse}");
+                Console.WriteLine("Fuse was blown.");
+                break;
             }
         }
 
-        // Write an action using Console.WriteLine()
-        // To debug: Console.Error.WriteLine("Debug messages...");
-
-        if (totalUse < c)
+        if (c > max)
         {
             Console.WriteLine("Fuse was not blown.");
-            Console.WriteLine($"Maximal consumed current was {totalUse} A.");
+            Console.WriteLine($"Maximal consumed current was {max} A.");
         }
+        // Write an action using Console.WriteLine()
+        // To debug: Console.Error.WriteLine("Debug messages...");
     }
 }

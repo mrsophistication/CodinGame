@@ -48,7 +48,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>CodinGame.DwarfsStandingOnTheShouldersOfGiants.DwarfsStandingOnTheShouldersOfGiants</StartupObject>
+    <StartupObject>BlowingFuse</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -114,6 +114,7 @@
     <Compile Include="TheDigitalRiverII\TheDigitalRiverII.cs" />
     <Compile Include="TheDigitalRiverI\TheDigitalRiverI.cs" />
     <Compile Include="tttttttttt.cs" />
+    <Compile Include="Unleash the Geek\UnleashtheGeek-BotProgramming.cs" />
     <Compile Include="War\War.cs" />
   </ItemGroup>
   <ItemGroup>
