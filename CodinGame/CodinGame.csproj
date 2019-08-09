@@ -48,7 +48,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>CodinGame.DwarfsStandingOnTheShouldersOfGiants.DwarfsStandingOnTheShouldersOfGiants</StartupObject>
+    <StartupObject>BlowingFuse</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
