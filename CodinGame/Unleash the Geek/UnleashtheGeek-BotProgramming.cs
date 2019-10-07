@@ -60,64 +60,7 @@ namespace CodinGame.Unleash_the_Geek
                     // Write an action using Console.WriteLine()
                     // To debug: Console.Error.WriteLine("Debug messages...");
 
-                    reqR = robots.Where(r => r.Item == 2).Any();
-
-                    Robot robo = robots.Where(r => r.ID == i).FirstOrDefault();
-
-                    if (robo.Item == 4)
-                    {
-                        robo.BackToHeadquarter();
-                    }
-                    else if (robo.Item == 2)
-                    {
-                        Console.Error.WriteLine($"robo{robo.ID}({robo.X}{robo.Y})");
-                        continue;
-                        //robo.Dig();
-                    }
-                    else
-                    {
-                        if (robo.Item == -1)
-                        {
-                            var veins = cells.Where(c => c.OreNum > 0);
-                            if (veins.Any())
-                            {
-                                var vein = veins.Aggregate((m, n) => GetDistance(robo, m) < GetDistance(robo, n) ? m : n);
-
-                                if (vein != null)
-                                {
-                                    robo.X = vein.X;
-                                    robo.Y = vein.Y;
-                                    robo.Dig();
-                                    cells.Where(c => c.X == vein.X && c.Y == vein.Y).First().Decrease();
-                                    continue;
-                                }
-                            }
-                            else
-                            {
-                                if (robo.IsInHeadQuarter())
-                                {
-                                    if (radarCooldown > 0)
-                                    {
-                                        robo.Wait();
-                                    }
-                                    if (reqR)
-                                    {
-                                        robo.RequestRADAR();
-                                        Console.Error.WriteLine($"robo{robo.ID}. calculating radar position.");
-                                        reqR = true;
-                                        robo.X = (area + 5) / 2;
-                                        robo.Y = height / 2;
-                                        area += 5;
-                                        robo.Dig();
-                                    }
-                                }
-                                else
-                                {
-                                    robo.BackToHeadquarter();
-                                }
-                            }
-                        }
-                    }
+                    
 
                     //Console.WriteLine("WAIT"); // WAIT|MOVE x y|DIG x y|REQUEST item
                 }
