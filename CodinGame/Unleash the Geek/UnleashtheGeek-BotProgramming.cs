@@ -16,7 +16,8 @@ namespace CodinGame.Unleash_the_Geek
             int height = int.Parse(inputs[1]); // size of the map
             List<Robot> robots = new List<Robot>();
             List<Cell> cells = new List<Cell>();
-            int area = 6;
+
+            bool firstTurn = true;
 
             // game loop
             while (true)
@@ -24,7 +25,6 @@ namespace CodinGame.Unleash_the_Geek
                 inputs = Console.ReadLine().Split(' ');
                 int myScore = int.Parse(inputs[0]); // Amount of ore delivered
                 int opponentScore = int.Parse(inputs[1]);
-                cells.Clear();
                 for (int i = 0; i < height; i++)
                 {
                     inputs = Console.ReadLine().Split(' ');
@@ -32,10 +32,20 @@ namespace CodinGame.Unleash_the_Geek
                     {
                         string ore = inputs[2 * j];// amount of ore or "?" if unknown
                         int hole = int.Parse(inputs[2 * j + 1]);// 1 if cell has a hole
-                        cells.Add(new Cell(i, j, ore == "?" ? -1 : int.Parse(ore), hole));
+
+                        if (!firstTurn)
+                        {
+                            foreach (var c in cells)
+                                if (c.X == i && c.Y == j)
+                                    c.Update(ore, hole);
+                        }
+                        else
+                        {
+                            cells.Add(new Cell(i, j, ore, hole));
+                        }
                     }
                 }
-                robots.Clear();
+
                 inputs = Console.ReadLine().Split(' ');
                 int entityCount = int.Parse(inputs[0]); // number of entities visible to you
                 int radarCooldown = int.Parse(inputs[1]); // turns left until a new radar can be requested
@@ -49,21 +59,98 @@ namespace CodinGame.Unleash_the_Geek
                     int y = int.Parse(inputs[3]); // position of the entity
                     int item = int.Parse(inputs[4]); // if this entity is a robot, the item it is carrying (-1 for NONE, 2 for RADAR, 3 for TRAP, 4 for ORE)
 
-                    if (type == 0)
+                    if (!firstTurn)
                     {
-                        robots.Add(new Robot(id, x, y, item));
+                        Console.Error.WriteLine($"update robot's list");
+                        if (type == 0)
+                            foreach (var r in robots)
+                                if (id == r.ID)
+                                {
+                                    r.X = x;
+                                    r.Y = y;
+                                    r.Item = item;
+                                }
+                    }
+                    else
+                    {
+                        if (type == 0)
+                        {
+                            Console.Error.WriteLine($"add robot {id} to list. count={robots.Count}");
+                            robots.Add(new Robot(id, x, y, item));
+                        }
                     }
                 }
-                bool reqR = false;
+
                 for (int i = 0; i < 5; i++)
                 {
+                    Console.Error.WriteLine($"{robots.Count}/////////////////////ROBOT {i}/////////////////////");
                     // Write an action using Console.WriteLine()
                     // To debug: Console.Error.WriteLine("Debug messages...");
 
-                    
+                    Robot robo = robots.Where(r => r.ID == i).FirstOrDefault();
+
+                    if (robo != null)
+                    {
+                        if (robo.Item == 4)
+                        {
+                            Console.Error.WriteLine($"****************BackToHeadquarter*****************");
+                            robo.BackToHeadquarter();
+                            Console.Error.WriteLine($"****************END BackToHeadquarter*****************");
+                        }
+                        else if (robo.Item == -1)
+                        {
+                            if (robo.destinationX > -1 && robo.destinationY > -1)
+                            {
+                                robo.destinationX = -1;
+                                robo.destinationY = -1;
+                            }
+
+                            Console.Error.WriteLine($"**************FIND VEIN*******************");
+
+                            var veins = cells.Where(v => v.OreNum != "?").ToArray();//find all seeable vains.
+                            if (veins != null && veins.Length > 0)
+                            {
+                                Console.Error.WriteLine($"got {veins.Length} veins.");
+                                if (veins.Length > 1)
+                                {
+                                    var nearestVein = veins.Aggregate((f, s) => GetDistance(robo, f) > GetDistance(robo, f) ? f : s);//find the nearest vein.
+                                    robo.X = nearestVein.X;
+                                    robo.Y = nearestVein.Y;
+                                    robo.Dig(nearestVein);
+                                }
+                                else if (veins.Length == 1)
+                                    robo.Dig(veins[0]);
+                            }
+                            else if (radarCooldown == 0)
+                            {
+                                Console.Error.WriteLine($"no vein. get radar.");
+                                if (robo.X == 0)
+                                    robo.RequestRADAR();
+                                else
+                                    robo.Move(new Cell(0, robo.Y));
+                            }
+                            Console.Error.WriteLine($"**************END FIND VEIN*******************");
+                        }
+                        else if (robo.Item == 2)
+                        {
+                            Console.Error.WriteLine($"***************PLANT RADAR******************");
+                            //Plant radar.
+                            Console.Error.WriteLine($"destinationX={robo.destinationX},destinationY={robo.destinationY}");
+                            if (robo.destinationX == -1 && robo.destinationY == -1)
+                            {
+                                Random rnd = new Random();
+                                robo.destinationX = rnd.Next(10, 25);
+                                robo.destinationY = rnd.Next(3, 13);
+                                robo.Dig(new Cell(robo.destinationX, robo.destinationY));
+                            }
+                            Console.Error.WriteLine($"***************END PLANT RADAR******************");
+                        }
+                    }
 
                     //Console.WriteLine("WAIT"); // WAIT|MOVE x y|DIG x y|REQUEST item
+                    Console.Error.WriteLine($"/////////////////////ROBOT {i} END/////////////////////");
                 }
+                firstTurn = false;
             }
         }
 
@@ -72,28 +159,45 @@ namespace CodinGame.Unleash_the_Geek
             int a = (robo.X - cell.Y) * 2;
             int b = (robo.Y - cell.Y) * 2;
             double c = Math.Sqrt(a + b);
-            Console.Error.WriteLine($"{c}");
+
+            Console.Error.WriteLine($"----------------------");
+            Console.Error.WriteLine($"robo=={robo.ID}");
+            Console.Error.WriteLine($"cell=={cell.X},{cell.Y}");
+            Console.Error.WriteLine($"a={a}");
+            Console.Error.WriteLine($"b={b}");
+            Console.Error.WriteLine($"c={c}");
+            Console.Error.WriteLine($"----------------------");
+
             return c;
         }
 
     }
 
+
+
     public class Cell
     {
         public int X, Y;
-        public int OreNum;
+        public string OreNum;
         public int hole;
 
-        public Cell(int x, int y, int ore, int hole)
+        public Cell(int x, int y, string ore, int hole)
         {
             X = x;
             Y = y;
             OreNum = ore;
         }
 
-        public void Decrease()
+        public Cell(int x, int y)
         {
-            OreNum--;
+            X = x;
+            Y = y;
+        }
+
+        public void Update(string ore,int h)
+        {
+            OreNum = ore;
+            hole = h;
         }
     }
 
@@ -103,6 +207,8 @@ namespace CodinGame.Unleash_the_Geek
         public readonly int ID;
         public int X, Y;
         public bool job = false;
+        public int destinationX = -1;
+        public int destinationY = -1;
 
 
         public Robot(int id, int x, int y, int item)
@@ -120,7 +226,7 @@ namespace CodinGame.Unleash_the_Geek
 
         public void RequestRADAR()
         {
-            Console.Error.WriteLine($"robo{ID}. Request RADAR.");
+            Console.Error.WriteLine($"Robo{ID} is requesting a radar.");
             Console.WriteLine($"REQUEST RADAR");
         }
 
@@ -130,17 +236,16 @@ namespace CodinGame.Unleash_the_Geek
             Console.WriteLine($"REQUEST TRAP");
         }
 
-        public void Move()
+        public void Move(Cell cell)
         {
-            Console.Error.WriteLine($"robo{ID}. Moving to {X},{Y}.");
-            Console.WriteLine($"DIG {X} {Y}");
+            Console.Error.WriteLine($"robo{ID}. Moving to {cell.X},{cell.Y}.");
+            Console.WriteLine($"DIG {cell.X} {cell.Y}");
         }
 
         public void BackToHeadquarter()
         {
             Console.Error.WriteLine($"robo{ID}. Back to headquarter.");
-            X = 0;
-            Move();
+            Move(new Cell(0, Y));
         }
 
         public bool IsInHeadQuarter()
@@ -148,10 +253,10 @@ namespace CodinGame.Unleash_the_Geek
             return X == 0;
         }
 
-        public void Dig()
+        public void Dig(Cell cell)
         {
-            Console.Error.WriteLine($"robo{ID}. Digging at {X},{Y}.");
-            Console.WriteLine($"DIG {X} {Y}");
+            Console.Error.WriteLine($"robo{ID}. Digging at {cell.X},{cell.Y}.");
+            Console.WriteLine($"DIG {cell.X} {cell.Y}");
         }
 
         public void DigNorth()
